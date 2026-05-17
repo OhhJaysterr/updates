@@ -49,6 +49,9 @@ def get_stuff(ore_name: str, ore_rarity: int) -> list[str, int] | None:
         case "aurora polaris":
             ion_multiplier = 30
             tier_name = "Enigmatic"
+        case "electrolyx":
+            ion_multiplier = 45
+            tier_name = "Exquisite"
         case _:
             if ore_rarity <= 999:  # common
                 ion_multiplier = 110
@@ -74,12 +77,6 @@ def get_stuff(ore_name: str, ore_rarity: int) -> list[str, int] | None:
             elif 7500000 <= ore_rarity <= 14999999:  # exquisite
                 ion_multiplier = 45
                 tier_name = "Exquisite"
-            """ 
-            Ag; idk if this works for Electrolyx but
-            elif ore_rarity == 15000000:
-                ion_multiplier = 45
-                tier_name = "Exquisite"
-            """
             elif 15000000 <= ore_rarity <= 49999999:  # transcendant
                 ion_multiplier = 40
                 tier_name = "Transcendent"
