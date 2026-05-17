@@ -71,10 +71,16 @@ def get_stuff(ore_name: str, ore_rarity: int) -> list[str, int] | None:
             elif 1000000 <= ore_rarity <= 7499999:  # exotic
                 ion_multiplier = 50
                 tier_name = "Exotic" 
-            elif 7500000 <= ore_rarity <= 15000000:  # exquisite
+            elif 7500000 <= ore_rarity <= 14999999:  # exquisite
                 ion_multiplier = 45
                 tier_name = "Exquisite"
-            elif 15000001 <= ore_rarity <= 49999999:  # transcendant
+            """ 
+            Ag; idk if this works for Electrolyx but
+            elif ore_rarity == 15000000:
+                ion_multiplier = 45
+                tier_name = "Exquisite"
+            """
+            elif 15000000 <= ore_rarity <= 49999999:  # transcendant
                 ion_multiplier = 40
                 tier_name = "Transcendent"
             elif 50000000 <= ore_rarity <= 99999999:  # enigmatic
