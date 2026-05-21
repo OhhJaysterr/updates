@@ -290,8 +290,8 @@ def get_permission_level(user_id: int) -> PermissionLevel:
     """
     Returns permission level for command usage. 
     Owner means they can run anything,
-    Admin means they can run certain things others can't (manual track for example)
-    Default means no special permissions
+    Admin means they can run certain things others can't (manual track for example),
+    Default means no special permissions.
     """
 
     if is_owner(user_id=user_id):
