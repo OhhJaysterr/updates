@@ -201,6 +201,7 @@ async def send_data(
                 await webhook.send("<@&1326276408087023638>", embed=embed)
             else:
                 await webhook.send(embed=embed)
+            session.close()
 
     adjusted_rarity = get_ore_rarity(ore_name, base_rarity, ore_type, cave_type, loadout, do_adjusted=True,
                                      run_nebulova=False) * decimal.Decimal(1.88)
