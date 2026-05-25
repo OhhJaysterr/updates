@@ -136,16 +136,8 @@ async def send_data(
                 continue
 
             user_pings: list = db_cursor.execute(
-                "SELECT user_id, every_track, globals_only FROM PingsPerUsername WHERE guild_id = ? AND username = ?",
+                "SELECT user_id FROM PingsPerUsername WHERE guild_id = ? AND username = ?",
                 (guild_id, username,)).fetchall()
-
-            ping_ids = []
-            for user_id, every_track, globals_only in user_pings:
-                if globals_only and not is_global:
-                    continue
-                if every_track or (globals_only and is_global):
-                    ping_ids.append(user_id)
-            pings = "".join([f"<@{uid}>" for uid in ping_ids])
 
             if is_global:
                 # FIXME: stax; make this look better.
@@ -156,7 +148,8 @@ async def send_data(
                 else:
                     global_message = ""
 
-                if ping_ids:
+                if len(user_pings) > 0:
+                    pings: str = "".join([f"<@{uid[0]}>" for uid in user_pings])
                     await tracker_channel.send(content=f"{global_message}\n{pings}", embed=embed)
                 else:
                     await tracker_channel.send(content=global_message, embed=embed)
@@ -170,7 +163,8 @@ async def send_data(
 
                     await global_channel.send(embed=embed)
             else:
-                if ping_ids:
+                if len(user_pings) > 0:
+                    pings: str = "".join([f"<@{uid[0]}>" for uid in user_pings])
                     await tracker_channel.send(content=pings, embed=embed)
                 else:
                     await tracker_channel.send(embed=embed)
