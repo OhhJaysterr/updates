@@ -110,14 +110,14 @@ class MainCommands(commands.Cog):
         # TODO: stax; figure out a better way to do this
         db_cursor.execute(
             """
-            INSERT INTO PingsPerUsername (guild_id, username, user_id, every_track, globals_only)
-            VALUES (?, ?, ?, ?, ?)
-            ON CONFLICT(guild_id, username, user_id, every_track, globals_only)
+            INSERT INTO PingsPerUsername (guild_id, username, user_id, globals_only)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(guild_id, username, user_id, globals_only)
                 DO UPDATE SET 
                 username = excluded.username,
                 globals_only = excluded.globals_only
             """,
-            (ctx.guild_id, username, ctx.author.id, False, globals_only)
+            (ctx.guild_id, username, ctx.author.id, globals_only)
         )
         db_conn.commit()
         await ctx.respond(content=f"You will now be pinged by tracks with the user \"{username}\"")

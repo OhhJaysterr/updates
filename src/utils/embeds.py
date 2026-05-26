@@ -136,11 +136,11 @@ async def send_data(
                 continue
 
             user_pings: list = db_cursor.execute(
-                "SELECT user_id, every_track, globals_only FROM PingsPerUsername WHERE guild_id = ? AND username = ?",
+                "SELECT user_id, globals_only FROM PingsPerUsername WHERE guild_id = ? AND username = ?",
                 (guild_id, username,)).fetchall()
 
             ping_ids = []
-            for user_id, every_track, globals_only in user_pings:
+            for user_id, globals_only in user_pings:
                 if globals_only and not is_global:
                     continue
                 ping_ids.append(user_id)

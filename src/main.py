@@ -57,7 +57,6 @@ def create_database() -> None:
             guild_id INTEGER NOT NULL,
             username TEXT    NOT NULL,
             user_id  INTEGER NOT NULL,
-            every_track BOOLEAN NOT NULL DEFAULT TRUE,
             globals_only BOOLEAN NOT NULL DEFAULT FALSE,
             PRIMARY KEY (guild_id, username, user_id)
         )
@@ -78,12 +77,6 @@ def create_database() -> None:
     db_conn.commit()
 
 def fix_up_database() -> None:
-    db_cursor.execute(
-        """
-        ALTER TABLE "PingsPerUsername"
-        ADD COLUMN every_track BOOLEAN NOT NULL DEFAULT TRUE
-        """
-    )
     db_cursor.execute(
         """
         ALTER TABLE "PingsPerUsername"
