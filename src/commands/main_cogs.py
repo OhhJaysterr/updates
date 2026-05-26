@@ -112,7 +112,7 @@ class MainCommands(commands.Cog):
             """
             INSERT INTO PingsPerUsername (guild_id, username, user_id, globals_only)
             VALUES (?, ?, ?, ?)
-            ON CONFLICT(guild_id, username, user_id, globals_only)
+            ON CONFLICT(guild_id, username, user_id)
                 DO UPDATE SET 
                 username = excluded.username,
                 globals_only = excluded.globals_only
