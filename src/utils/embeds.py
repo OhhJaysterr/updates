@@ -104,7 +104,7 @@ async def send_data(
     
     # stax; fix up the cave type for any mistakes the rex tracker might have made
     ore_attributes: OreAttributes = get_ore_attributes(ore_name=ore_name)
-    if ore_attributes.is_cave_exclusive and ore_name.lower() != "black flame": # fuck you multi-cave-type cave exclusives!
+    if ore_attributes and ore_attributes.is_cave_exclusive and ore_name.lower() != "black flame": # fuck you multi-cave-type cave exclusives!
         cave_type = ore_attributes.cave_type
 
     channel_data: list[tuple[int, int, int]] = db_cursor.execute(
