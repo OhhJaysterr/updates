@@ -5,7 +5,7 @@ import aiohttp
 from discord import Embed
 
 from utils.defs import *
-from utils.utils import get_ore_rarity
+from utils.utils import OreAttributes, get_ore_attributes, get_ore_rarity
 
 
 # this has the same parameters as send_data.
@@ -101,6 +101,11 @@ async def send_data(
     is_global: bool = tier_rank == -1 or tier_rank >= OreTiers.UNFATHOMABLE or (
             tier_rank >= OreTiers.ENIGMATIC and ore_type == "IONIZED") or (
                               tier_rank >= OreTiers.TRANSCENDENT and ore_type == "SPECTRAL")
+    
+    # stax; fix up the cave type for any mistakes the rex tracker might have made
+    ore_attributes: OreAttributes = get_ore_attributes(ore_name=ore_name)
+    if ore_attributes.is_cave_exclusive and ore_name.lower() != "black flame": # fuck you multi-cave-type cave exclusives!
+        cave_type = ore_attributes.cave_type
 
     channel_data: list[tuple[int, int, int]] = db_cursor.execute(
         """
