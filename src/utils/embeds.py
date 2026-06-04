@@ -5,7 +5,7 @@ import aiohttp
 from discord import Embed
 
 from utils.defs import *
-from utils.utils import OreAttributes, get_ore_attributes, get_ore_rarity
+from utils.utils import *
 
 
 # this has the same parameters as send_data.
@@ -27,7 +27,7 @@ def create_embed(
     manual_tracked: bool = False
 ) -> Embed | None:
     # stax; fix up ore rarity for stuff like nebulova event, or zanarchium being 0 rarity on tracker
-    base_rarity: int = get_ore_rarity(ore_name=ore_name, base_rarity=ore_rarity, ore_type=ore_type, cave_type=cave_type,
+    base_rarity: int = utils.get_ore_rarity(ore_name=ore_name, base_rarity=ore_rarity, ore_type=ore_type, cave_type=cave_type,
                                       loadout=loadout, do_adjusted=False, run_nebulova=True)
 
     embed: discord.Embed = discord.Embed(color=TIER_NAME_TO_COLOR_HEX.get(ore_tier, 0))
@@ -55,7 +55,7 @@ def create_embed(
             adjusted_preference = AdjustedPreferences.BOTH
         if adjusted_preference != AdjustedPreferences.NONE:
             # stax; use run_nebulova = False because base_rarity calculations above already account for it.
-            adjusted_rarity: int = get_ore_rarity(ore_name=ore_name, base_rarity=base_rarity, ore_type=ore_type,
+            adjusted_rarity: int = utils.get_ore_rarity(ore_name=ore_name, base_rarity=base_rarity, ore_type=ore_type,
                                                   cave_type=cave_type, loadout=loadout, do_adjusted=True,
                                                   run_nebulova=False)
             adjusted_rarity_cc = round(adjusted_rarity * decimal.Decimal(1.88))
@@ -71,7 +71,7 @@ def create_embed(
     # stax; prevent the bot from sending something that is too long
     # this is probably never going to be true (?), but i like to be safe
     if len(embed) > 6000:
-        logger.error(msg="embed was too long!")
+        logger.error(msg="[create_embed] Embed was too long!")
         return None
 
     return embed
@@ -97,13 +97,13 @@ async def send_data(
     tier_rank: OreTiers = TIER_NAME_TO_TIER_RANK.get(ore_tier, -1)
     if tier_rank == -1:
         # stax; Don't skip the track if this is true, as we can still track it (it will have a white color on the tracker)
-        logger.error(msg=f"couldn't find a corresponding tier rank for a tier.\nore tier: {ore_tier}\n")
+        logger.error(msg=f"[send_data] Couldn't find a corresponding tier rank for a tier.\nore tier: {ore_tier}\n")
     is_global: bool = tier_rank == -1 or tier_rank >= OreTiers.UNFATHOMABLE or (
             tier_rank >= OreTiers.ENIGMATIC and ore_type == "IONIZED") or (
                               tier_rank >= OreTiers.TRANSCENDENT and ore_type == "SPECTRAL")
     
     # stax; fix up the cave type for any mistakes the rex tracker might have made
-    ore_attributes: OreAttributes = get_ore_attributes(ore_name=ore_name)
+    ore_attributes: OreAttributes = utils.get_ore_attributes(ore_name=ore_name)
     if ore_attributes and ore_attributes.is_cave_exclusive\
           and ore_name.lower() != "black flame" and ore_attributes.cave_type != "Starry Cave": # fuck you multi-cave-type cave exclusives!
         cave_type = ore_attributes.cave_type
@@ -130,7 +130,7 @@ async def send_data(
         if username.lower() in [player.lower() for player in players]:
             tracker_channel: discord.TextChannel = bot.get_channel(tracker_channel_id)
             if not tracker_channel:
-                logger.error(msg=f"could not find tracker channel {tracker_channel_id} in {guild_id}!")
+                logger.error(msg=f"[send_data] Couldn't find tracker channel {tracker_channel_id} in {guild_id}!")
                 # TODO: stax; remove the channel from the database if its not found.
                 continue
 
@@ -169,7 +169,7 @@ async def send_data(
                 if global_channel_id:
                     global_channel: discord.TextChannel = bot.get_channel(global_channel_id)
                     if not global_channel:
-                        logger.error(msg=f"could not find global channel {global_channel_id} in {guild_id}!")
+                        logger.error(msg=f"[send_data] Couldn't find global channel {global_channel_id} in {guild_id}!")
                         # TODO: stax; remove the channel from the database if its not found.
                         continue
 
@@ -186,6 +186,7 @@ async def send_data(
                                                 username=username, loadout=loadout, blocks_mined=blocks_mined,
                                                 guild_id=None, manual_tracked=False)
     if not embed:
+        logger.error("[send_data] Missing embed, can't send anything!")
         return
     
     if is_global:
@@ -196,7 +197,7 @@ async def send_data(
         if wdor_global_channel:
             await wdor_global_channel.send(embed=embed)
 
-    base_rarity: int = get_ore_rarity(ore_name=ore_name, base_rarity=ore_rarity, ore_type=ore_type, cave_type=cave_type,
+    base_rarity: int = utils.get_ore_rarity(ore_name=ore_name, base_rarity=ore_rarity, ore_type=ore_type, cave_type=cave_type,
                                       loadout=loadout, do_adjusted=False, run_nebulova=True)
     if blocks_mined <= 5000000:
         cat_beginner_channel: discord.TextChannel = bot.get_channel(1311792395414667304)
@@ -217,14 +218,17 @@ async def send_data(
                 await webhook.send(embed=embed)
             session.close()
 
-    adjusted_rarity = get_ore_rarity(ore_name, base_rarity, ore_type, cave_type, loadout, do_adjusted=True,
+    adjusted_rarity = utils.get_ore_rarity(ore_name, base_rarity, ore_type, cave_type, loadout, do_adjusted=True,
                                      run_nebulova=False) * decimal.Decimal(1.88)
     cat_rare_ore_tracker_channel = bot.get_channel(1407955712209977415)
-    if cave_type is not None and adjusted_rarity >= 100_000_000_000:
-        await cat_rare_ore_tracker_channel.send("<@&1416256696384487525>", embed=embed)
-    elif tier_rank == OreTiers.IMAGINARY and ore_type != "NORMAL":
-        await cat_rare_ore_tracker_channel.send("<@&1466449671428767895> <@&1416256696384487525>", embed=embed)
-    elif tier_rank == OreTiers.IMAGINARY:
-        await cat_rare_ore_tracker_channel.send("<@&1466449671428767895>", embed=embed)
-    elif base_rarity >= 50_000_000_000:
-        await cat_rare_ore_tracker_channel.send("<@&1416256696384487525>", embed=embed)
+    if cat_rare_ore_tracker_channel:
+        if cave_type is not None and adjusted_rarity >= 100_000_000_000:
+            await cat_rare_ore_tracker_channel.send("<@&1416256696384487525>", embed=embed)
+        elif tier_rank == OreTiers.IMAGINARY and ore_type != "NORMAL":
+            await cat_rare_ore_tracker_channel.send("<@&1466449671428767895> <@&1416256696384487525>", embed=embed)
+        elif tier_rank == OreTiers.IMAGINARY:
+            await cat_rare_ore_tracker_channel.send("<@&1466449671428767895>", embed=embed)
+        elif base_rarity >= 50_000_000_000:
+            await cat_rare_ore_tracker_channel.send("<@&1416256696384487525>", embed=embed)
+    else:
+        logger.error("[send_data] The rare ore tracker channel is missing!")

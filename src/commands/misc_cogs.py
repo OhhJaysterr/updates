@@ -5,26 +5,11 @@ Miscellaneous cogs. Put commands in here that are non-essential to the functiona
 import traceback
 
 from discord.ext import commands
-from difflib import get_close_matches
 
 from utils.defs import *
 from utils.utils import *
 
-def find_closest_name(ore_name: str) -> str | None:
-    symbol_ores_list = ['sigma', 'pi', 'omega', 'lunar omega', 'delta', 'psi', 'infinictrite', 'noopa', 'noo p a']
-    number_ores_list = ['combustion system', 'trojan']
-    if ore_name.lower() in symbol_ores_list:
-        return ['Σ', 'π', 'Ω', 'Lunar Ω', 'Δ', 'ψ', '∞', 'NOO P α', 'NOO P α'][symbol_ores_list.index(ore_name.lower())]
-    elif ore_name.lower() in number_ores_list:
-        return ['@Combust10n_+_Syst3m', 'TR0J4N'][number_ores_list.index(ore_name.lower())]
 
-    name_list: dict = ALL_ORES.get('Ores', {})
-    if not name_list:
-        raise ValueError
-    
-    name_list_lower: dict = { n.lower(): n for n in name_list }
-    matches = get_close_matches(ore_name.lower(), name_list_lower.keys(), 1)
-    return name_list_lower[matches[0]] if matches else None
 
 # lazy
 def get_stuff(ore_name: str, ore_rarity: int) -> list[str, int] | None: 
@@ -120,7 +105,7 @@ class MiscCommands(commands.Cog):
     @commands.slash_command()
     @commands.guild_only()
     async def list_tracked_users(self, ctx: discord.ApplicationContext):
-        if not ctx.author.guild_permissions.administrator and not is_owner(ctx.author.id):
+        if not ctx.author.guild_permissions.administrator and utils.get_permission_level(user_id=ctx.user.id) != PermissionLevel.OWNER:
             await ctx.respond(content="You do not have admin permissions")
             return
 
@@ -135,12 +120,9 @@ class MiscCommands(commands.Cog):
 
     @commands.slash_command()
     @commands.guild_only()
-    async def set_adjusted_preference(
-        self, ctx: discord.ApplicationContext, preference=discord.Option(str, description="", choices=[
-            "No adjusted rarity", "No cave constant", "Use cave constant", "Show both"
-        ])
-        ):
-        if not ctx.author.guild_permissions.administrator and not is_owner(ctx.author.id):
+    @discord.commands.option("preference", str, description="Adjusted rarity setting", choices=["No adjusted rarity", "No cave constant", "Use cave constant", "Show both"])
+    async def set_adjusted_preference(self, ctx: discord.ApplicationContext, preference: str):
+        if not ctx.author.guild_permissions.administrator and utils.get_permission_level(user_id=ctx.user.id) != PermissionLevel.OWNER:
             await ctx.respond(content="You do not have admin permissions")
             return
 
@@ -153,7 +135,7 @@ class MiscCommands(commands.Cog):
                 _preference = AdjustedPreferences.CONSTANT
             case "Show both":
                 _preference = AdjustedPreferences.BOTH
-            case _:
+            case _: # This will never be hit unless I make a typo in the choices...
                 _preference = AdjustedPreferences.CONSTANT
 
         db_cursor.execute(
@@ -169,29 +151,19 @@ class MiscCommands(commands.Cog):
         await ctx.respond(content=f"Set adjusted preference to \"{preference}\"")
 
     @commands.slash_command(
-            integration_types={ discord.IntegrationType.user_install, discord.IntegrationType.guild_install } # allow this to be used outside of servers where the bot is
+            integration_types={ discord.IntegrationType.user_install, discord.IntegrationType.guild_install } # Allow this to be used outside of servers where the bot is.
         )
+    @discord.commands.option("ore_name", str, description="The name of the ore you want the info of", autocomplete=utils.ore_name_autocomplete)
+    @discord.commands.option("ore_type", str, description="The variant of the ore", choices=["Normal", "Ionized", "Spectral"], required=False, default="Normal")
+    @discord.commands.option("cave_type", str, description="The cave type of the ore. Not required for cave exclusives", autocomplete=utils.cave_type_autocomplete, required=False, default=None)
     async def ore_info(
         self, ctx: discord.ApplicationContext,
         ore_name: str,
-        ore_type = discord.Option(str, "Enter a variant", choices=["Normal", "Ionized", "Spectral"], required=False, default="Normal"),
-        cave_type = discord.Option(str, "Enter a cave type", required=False),
+        ore_type: str = "Normal",
+        cave_type: str = None,
     ):
-        closest_name: str | None = None
-        if ore_name not in ALL_ORES.get("Ores", {}):
-            closest_name = find_closest_name(ore_name)
-            if not closest_name:
-                return await ctx.respond(content=f"Ore name \"{ore_name}\" was not found")
-            ore_name = closest_name
-        
-        if cave_type is not None:
-            if cave_type.lower() == "none" or ore_name.lower() == "zanarchium":
-                cave_type = None
-            elif ore_name.lower() != "zanarchium":
-                if not get_nth_word(string=cave_type, n=2):
-                    cave_type += " Cave"
-                    if cave_type != "nil Cave":
-                        cave_type = cave_type.title()
+        if cave_type is not None and cave_type.lower() == "none" or ore_name.lower() == "zanarchium":
+            cave_type = None
 
         if cave_type and cave_type not in CAVE_ORES.keys():
             return await ctx.respond(content=f"Cave type \"{cave_type}\" was not found")
@@ -205,7 +177,7 @@ class MiscCommands(commands.Cog):
         tier: str = ""
 
         ion_mult: int = 1
-        ore_attr: OreAttributes | None = get_ore_attributes(ore_name=ore_name)
+        ore_attr: OreAttributes | None = utils.get_ore_attributes(ore_name=ore_name)
         if ore_attr:
             ion_mult = ore_attr.ion_mult
             tier = ore_attr.tier_name
@@ -257,10 +229,10 @@ class MiscCommands(commands.Cog):
         text += f"\nTier: {tier}\n"
         text += f"Rarity: {round(base_rarity):,}\n"
         if cave_type:
-            adjusted_rarity_norm = get_ore_rarity(ore_name=ore_name, base_rarity=base_rarity, ore_type=ore_type, cave_type=cave_type, loadout=None, do_adjusted=True, run_nebulova=False)
+            adjusted_rarity_norm = utils.get_ore_rarity(ore_name=ore_name, base_rarity=base_rarity, ore_type=ore_type, cave_type=cave_type, loadout=None, do_adjusted=True, run_nebulova=False)
             if cave_type == "Gilded Cave":
                 text += f"Adjusted Rarity (5700): 1/{round(adjusted_rarity_norm * decimal.Decimal(1.88)):,} [CC] | 1/{adjusted_rarity_norm:,}\n"
-                adjusted_rarity_salad = get_ore_rarity(ore_name=ore_name, base_rarity=base_rarity, ore_type=ore_type, cave_type=cave_type, loadout="57 Leaf Clover", do_adjusted=True, run_nebulova=False)
+                adjusted_rarity_salad = utils.get_ore_rarity(ore_name=ore_name, base_rarity=base_rarity, ore_type=ore_type, cave_type=cave_type, loadout="57 Leaf Clover", do_adjusted=True, run_nebulova=False)
                 text += f"Adjusted Rarity (57): 1/{round(adjusted_rarity_salad * decimal.Decimal(1.88)):,} [CC] | 1/{adjusted_rarity_salad:,}\n"
             else:
                 text += f"Adjusted Rarity: 1/{round(adjusted_rarity_norm * decimal.Decimal(1.88)):,} [CC] | 1/{adjusted_rarity_norm:,}\n"

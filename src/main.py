@@ -1,8 +1,4 @@
-import os
-import re
-import traceback
-
-import dotenv
+import os, re, traceback, dotenv, datetime
 
 from commands.cogs import setup_commands
 from utils.defs import *
@@ -77,14 +73,7 @@ def create_database() -> None:
     db_conn.commit()
 
 def fix_up_database() -> None:
-    db_cursor.execute(
-        """
-        ALTER TABLE "PingsPerUsername"
-        ADD COLUMN globals_only BOOLEAN NOT NULL DEFAULT FALSE
-        """
-    )
-
-    db_conn.commit()
+    return
 
 
 def main() -> None:
@@ -94,8 +83,6 @@ def main() -> None:
 
     @bot.event
     async def on_connect() -> None:
-        print("Ready")  # stax; do not remove this! cybrancee shits itself if you don't print ready
-
         if bot.auto_sync_commands:
             await bot.sync_commands()
 
@@ -110,6 +97,18 @@ def main() -> None:
             status=discord.Status.online,
             activity=activity
         )
+    
+    @bot.event
+    async def on_disconnect() -> None:
+        print(f"[{datetime.datetime.now()}] Bot disconnected from Discord gateway")
+        logger.error(f"[{datetime.datetime.now()}] Bot disconnected from Discord gateway")
+
+    @bot.event
+    async def on_ready() -> None:
+        print(f"Bot has logged in as {bot.user.name}")
+        logger.debug(f"Bot has logged in as \"{bot.user.name}\"")
+
+        print("Ready") # stax; do not remove this!
 
     @bot.event
     async def on_message(message: discord.Message) -> None:
@@ -129,8 +128,8 @@ def main() -> None:
 
             tier: str = TIER_COLOR_TO_TIER_NAME.get(str(embed_data.color), None)
             if tier is None:
-                logger.error(f"\nMissing color for tier: {str(embed_data.color)} {type(str(embed_data.color))}")
-                logger.debug(f"{embed_data.color.r}, {embed_data.color.g}, {embed_data.color.b}, {embed_data.color}\n")
+                logger.error(f"[on_message] Missing color for tier: {str(embed_data.color)} {type(str(embed_data.color))}")
+                logger.debug(f"[on_message] {embed_data.color.r}, {embed_data.color.g}, {embed_data.color.b}, {embed_data.color}\n")
 
             base_rarity: int = int(float(fields[0].value.split()[0].replace("1/", "").replace(",", "")))
             blocks_mined: int = int(fields[1].value.replace(",", ""))
@@ -161,7 +160,9 @@ def main() -> None:
     except:
         trace: str = traceback.format_exc()
         logger.error(msg=trace)
-        print("\n\n\nbot failed to start!!!\n\n\n")
+
+        separator: str = {"-"*50}
+        print(f"\n{separator}\nBot failed to start!!!\n{trace}\n{separator}\n")
 
 
 if __name__ == "__main__":
