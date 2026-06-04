@@ -100,8 +100,8 @@ def main() -> None:
     
     @bot.event
     async def on_disconnect() -> None:
-        print(f"[{datetime.datetime.now()}] Bot disconnected from Discord gateway")
-        logger.error(f"[{datetime.datetime.now()}] Bot disconnected from Discord gateway")
+        print(f"Bot disconnected from Discord gateway")
+        logger.debug(f"Bot disconnected from Discord gateway")
 
     @bot.event
     async def on_ready() -> None:
