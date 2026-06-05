@@ -162,7 +162,7 @@ class MiscCommands(commands.Cog):
         ore_type: str = "Normal",
         cave_type: str = None,
     ):
-        if cave_type is not None and cave_type.lower() == "none" or ore_name.lower() == "zanarchium":
+        if cave_type is not None and (cave_type.lower() == "none" or ore_name.lower() == "zanarchium"):
             cave_type = None
 
         if cave_type and cave_type not in CAVE_ORES.keys():
