@@ -163,7 +163,7 @@ async def send_data(
 
                 # Glaggleland's custom tier ping system
                 if guild_id == 1248099267449458688:
-                    ping = utils.get_global_role_ping(ore_name=ore_name.lower(), ore_rarity=base_rarity, ore_rank=tier_rank, ore_type=ore_type, cave_type=cave_type)
+                    ping = utils.get_global_role_ping(ore_name=ore_name.lower(), ore_rarity=ore_rarity, ore_rank=tier_rank, ore_type=ore_type, cave_type=cave_type)
                     global_message = f"{ping}{global_message}"
 
                 if ping_ids:
