@@ -10,6 +10,7 @@ __pycache__/
 *.db
 
 .venv/
+.vscode/
 
 # Distribution / packaging
 .Python

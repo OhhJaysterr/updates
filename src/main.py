@@ -1,4 +1,4 @@
-import os, re, traceback, dotenv, datetime
+import os, re, traceback, dotenv
 
 from commands.cogs import setup_commands
 from utils.defs import *
@@ -85,6 +85,9 @@ def main() -> None:
     async def on_connect() -> None:
         if bot.auto_sync_commands:
             await bot.sync_commands()
+
+        print("Bot has connected.")
+        logger.debug("Bot has connected.")
 
         guild_count = db_cursor.execute("SELECT COUNT(*) FROM ChannelsPerGuild", ).fetchone()[0]
         activity = discord.Activity(

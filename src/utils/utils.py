@@ -359,6 +359,7 @@ class utils:
     def ore_name_autocomplete(ctx: discord.AutocompleteContext) -> list[str]:
         if not ctx.value: return ["Enter an ore name!"]
         ore_names = utils.find_closest_names(ctx.value.lower())
+        if not ore_names or len(ore_names) <= 0: return ["Enter a valid ore name!"]
         vals = [c for c in ore_names if ctx.value.lower() in c.lower()][:5]
         return vals
 
@@ -366,3 +367,56 @@ class utils:
     def cave_type_autocomplete(ctx: discord.AutocompleteContext) -> list[str]:
         if not ctx.value: return ["Enter a cave type!"]
         return [c for c in CAVE_ORES.keys() if ctx.value.lower() in c.lower()][:5]
+
+    @staticmethod
+    def get_global_role_ping(ore_name: str, ore_rarity: float, ore_rank: OreTiers, ore_type: str, cave_type: str) -> str:
+        # This sucks! but oh well.
+        event_rarities: dict[str, int] = {
+            "idolium": 140_000_000,
+            "inclemetite": 225_000_000,
+            "illusory bubblegram": 342_000_040,
+            "acrimony": 191_847_000,
+            "noo p α": 565_656_000,
+            "ephemryst": 190_520_000,
+            "vocarus": 200_500_500,
+            "hallownest": 210_167_002,
+            "reminiscence": 234_030_360,
+            "yuki onna": 350_100_200,
+            "wintburg": 590_200_035,
+            "antlerion": 11_086_357,
+            "mekanos": 320_830_300,
+            "theon": 590_300_300,
+            "c◊smic_split": 840_500_000,
+            "x-flare": 31_250_000,
+            "troylezian": 222_333_444,
+            "serotonin": 432_198_765,
+            "prisma": 1_222_222_222,
+            "shadow-x": 136_932_133,
+            "∞": 20_000_000_000
+        }
+
+        base_ore_rarity: float = utils.get_ore_rarity(ore_name=ore_name, base_rarity=ore_rarity, ore_type=ore_type, cave_type=cave_type, loadout=None, do_adjusted=False)
+        adjusted_ore_rarity: float = utils.get_ore_rarity(ore_name=ore_name, base_rarity=ore_rarity, ore_type=ore_type, cave_type=cave_type, loadout=None, do_adjusted=True, run_nebulova=True)
+        event_ore_rarity: float = event_rarities.get(ore_name, base_ore_rarity) * (1 if not event_rarities.get(ore_name, None) else (1 if ore_type == "NORMAL" else 20 if ore_rank == OreTiers.UNFATHOMABLE else 15))
+        attributes: OreAttributes | None = utils.get_ore_attributes(ore_name=ore_name)
+        cave_exclusive: bool = attributes != None and attributes.is_cave_exclusive
+        
+        normal_cave_exc_unfaths: list[str] = ["cataclysmium", "antlerion", "thermazine", "low.hp", "empress of light", "thumb crystal", "x-flare", "shadow cherkasyl", "ghostwalker"]
+        ion_cave_exc_enigs: list[str] = ["monojit", "illusorium", "collapse", "sword waltz", "geometrix", "generic68-b", "astraea", "aetherion"]
+        if (ore_rank == OreTiers.UNFATHOMABLE and ore_type == "NORMAL" and not cave_type) or\
+            (ore_rank == OreTiers.ENIGMATIC and ore_type == "IONIZED" and not cave_exclusive and not cave_type) or\
+            (ore_name in normal_cave_exc_unfaths and ore_type == "NORMAL") or\
+            (ore_name in ion_cave_exc_enigs and ore_type == "IONIZED") or\
+            (ore_rank == OreTiers.ZENITH and ore_type == "NORMAL") or\
+            (ore_rank == OreTiers.EXCLUSIVE):
+            return "<@&1371968654328991895>\n"
+        elif (ore_rank == OreTiers.OTHERWORLDLY and event_ore_rarity <= 1500000000 and not cave_type and ore_type == "NORMAL") or\
+            (ore_rank == OreTiers.UNFATHOMABLE and cave_exclusive and (ore_type == "NORMAL" or ore_type == "IONIZED")) or\
+            (ore_rank == OreTiers.UNFATHOMABLE and adjusted_ore_rarity <= 7000000000 and cave_type and ore_type == "NORMAL") or\
+            (ore_rank == OreTiers.ENIGMATIC and cave_exclusive and ore_name != "hyperheated quasar" and ore_type == "IONIZED") or\
+            (ore_rank == OreTiers.TRANSCENDENT and ore_type == "SPECTRAL" and not cave_type) or\
+            (ore_rank == OreTiers.UNFATHOMABLE and ore_type == "IONIZED" and event_ore_rarity <= (300000000 * 20) and not cave_type) or\
+            ((ore_name == "machina" or ore_name == "syderea") and ore_type == "NORMAL"):
+            return "## <@&1473111240116273214>\n<@&1371968654328991895>\n"
+        else:
+            return "# ***<@&1473111272538243082>***\n**<@&1473111240116273214>** <@&1371968654328991895>\n"

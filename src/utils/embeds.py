@@ -130,7 +130,7 @@ async def send_data(
         if username.lower() in [player.lower() for player in players]:
             tracker_channel: discord.TextChannel = bot.get_channel(tracker_channel_id)
             if not tracker_channel:
-                logger.error(msg=f"[send_data] Couldn't find tracker channel {tracker_channel_id} in {guild_id}!")
+                logger.error(msg=f"[send_data] Couldn't find tracker channel {tracker_channel_id} in guild id {guild_id}!")
                 # TODO: stax; remove the channel from the database if its not found.
                 continue
 
@@ -161,6 +161,11 @@ async def send_data(
                 else:
                     global_message = ""
 
+                # Glaggleland's custom tier ping system
+                if guild_id == 1248099267449458688:
+                    ping = utils.get_global_role_ping(ore_name=ore_name.lower(), ore_rarity=base_rarity, ore_rank=tier_rank, ore_type=ore_type, cave_type=cave_type)
+                    global_message = f"{ping}{global_message}"
+
                 if ping_ids:
                     await tracker_channel.send(content=f"{global_message}\n{pings}", embed=embed)
                 else:
@@ -169,7 +174,7 @@ async def send_data(
                 if global_channel_id:
                     global_channel: discord.TextChannel = bot.get_channel(global_channel_id)
                     if not global_channel:
-                        logger.error(msg=f"[send_data] Couldn't find global channel {global_channel_id} in {guild_id}!")
+                        logger.error(msg=f"[send_data] Couldn't find global channel {global_channel_id} in guild id {guild_id}!")
                         # TODO: stax; remove the channel from the database if its not found.
                         continue
 
