@@ -395,7 +395,7 @@ class utils:
             "∞": 20_000_000_000
         }
 
-        base_ore_rarity: float = utils.get_ore_rarity(ore_name=ore_name, base_rarity=ore_rarity, ore_type=ore_type, cave_type=cave_type, loadout=None, do_adjusted=False)
+        base_ore_rarity: float = utils.get_ore_rarity(ore_name=ore_name, base_rarity=ore_rarity, ore_type=ore_type, cave_type=cave_type, loadout=None, do_adjusted=False, run_nebulova=False)
         adjusted_ore_rarity: float = utils.get_ore_rarity(ore_name=ore_name, base_rarity=ore_rarity, ore_type=ore_type, cave_type=cave_type, loadout=None, do_adjusted=True, run_nebulova=True)
         event_ore_rarity: float = event_rarities.get(ore_name, base_ore_rarity) * (1 if not event_rarities.get(ore_name, None) else (1 if ore_type == "NORMAL" else 20 if ore_rank == OreTiers.UNFATHOMABLE else 15))
         attributes: OreAttributes | None = utils.get_ore_attributes(ore_name=ore_name)
