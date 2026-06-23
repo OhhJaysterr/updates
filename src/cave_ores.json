@@ -464,7 +464,7 @@
   "Eggshell Cave": {
     "rarity": 26,
     "ores": {
-      "Shellker": [33, 3630, 33],
+      "Shellker": [33, 3630, 54450],
 	  "Albumin": [46, 5060, 75900],
 	  "Vogel": [163, 16300, 244500],
       "Bonnite": [480, 43200, 648000],
