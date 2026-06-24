@@ -1008,7 +1008,7 @@
     "Rubium": 166,
     "Igniment": 466,
     "Vulcanite": 666,
-    "Impite": 2666,
+    "Impit": 2666,
     "Brimstone": 4666,
     "Cerisite": 6666,
     "Flesh": 12666,
@@ -1760,7 +1760,6 @@
     "Resonance": 10744680,
     "Evanessence": 82446810,
     "Essence of Luck": 2200,
-    "Benthizine": 8500,
-    "Ghouline": 1050
+    "Benthizine": 8500
   }
 }
