@@ -979,7 +979,7 @@
     "Indire": 130,
     "Prowlus": 495,
     "Phantomite": 760,
-    "Ghoulline": 1050,
+    "Ghouline": 1050,
     "Ectoswirl": 3500,
     "Flickerfright": 6767,
     "Psyonium": 17921,
@@ -1025,7 +1025,7 @@
     "Contemptus Gemma": 866666,
     "SMILE": 3666666,
     "Sigilite": 6666666,
-    "Ritualisium": 8666666,
+    "Ritualismium": 8666666,
     "Diavitura": 12666666,
     "Vlasovale": 26666666,
     "Moon Fragment": 36666666,
@@ -1760,7 +1760,6 @@
     "Resonance": 10744680,
     "Evanessence": 82446810,
     "Essence of Luck": 2200,
-    "Benthizine": 8500,
-    "Ghouline": 1050
+    "Benthizine": 8500
   }
 }
